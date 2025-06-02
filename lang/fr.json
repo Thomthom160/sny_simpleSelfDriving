@@ -1,0 +1,12 @@
+[
+    {
+        "left_vehicle" : "Tu est sortis du véhicule",
+        "waypoint_not_active" : "Aucune destination selectionée",
+        "destination_reached" : "La destination à été atteinte",
+        "vehicle_not_allowed" : "La conduite n'est pas possible dans ce véhicule",
+        "no_driver" : "Aucun conducteur au volant du véhicule",
+        "start_self_driving" : "Conduite automatique activée",
+        "stop_self_driving" : "Conduite automatique désactivée",
+        "missing_translation" : "Traduction manquante"
+    }
+]
