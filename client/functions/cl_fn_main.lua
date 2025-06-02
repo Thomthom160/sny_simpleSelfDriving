@@ -1,6 +1,5 @@
 client = {}
 client.language = {}
-client.playerPed = PlayerPedId()
 client.isPlayerAlive = false
 client.isInVehicle = false
 client.isEnteringVehicle = false
@@ -53,9 +52,9 @@ end
 
 client.functions.showNotification = function(message, messageType)
     if client.language[message] then
-        config.showNotification(client.language[message], messageType)
+        lib.notify(client.language[message], messageType)
     else
-        config.showNotification(client.language['missing_translation']..' : '..message, messageType)
+        lib.notify(("%s : %s\n%s"):format(client.language['missing_translation'], message, messageType), 'error')
         client.functions.playSound('error')
     end
 end
@@ -65,11 +64,11 @@ client.functions.startSelfDriving = function(playerPed, playerVehicle, waypointC
         client.currentVehicle = playerVehicle
         client.target = waypointCoords
         client.isDriving = true
-        local locked = GetVehicleDoorLockStatus(client.currentVehicle)
+        --local locked = GetVehicleDoorLockStatus(client.currentVehicle)
         TaskVehicleDriveToCoord(playerPed, client.currentVehicle, client.target.x, client.target.y, client.target.z, config.drivingSpeed, 0, GetEntityModel(client.currentVehicl), client.drivingStyle, config.drivingDistanceStop)
-        if locked ~= 2 then
-            SetVehicleDoorsLocked(client.currentVehicle, 1)
-        end
+        --if locked ~= 2 then
+        --    SetVehicleDoorsLocked(client.currentVehicle, 1)
+        --end
         client.functions.showNotification('start_self_driving', 'success')
         if playSound then
             client.functions.playSound('enable')
@@ -80,17 +79,16 @@ end
 client.functions.stopSelfDriving = function(playerPed, brake, playSound)
     if DoesEntityExist(playerPed) then
         if IsPedInAnyVehicle(playerPed, false) then
-            local playerVehicle = GetVehiclePedIsIn(playerPed, false)
-            ClearVehicleTasks(playerVehicle)
+            ClearVehicleTasks(cache.vehicle)
             if brake then
-                Citizen.CreateThread(function()
-                    while not IsVehicleStopped(playerVehicle) do
-                        Citizen.Wait(0)
-                        SetVehicleBrake(playerVehicle, true)
-                        SetVehicleHandbrake(playerVehicle, true)
+                CreateThread(function()
+                    while not IsVehicleStopped(cache.vehicle) do
+                        Wait(0)
+                        SetVehicleBrake(cache.vehicle, true)
+                        SetVehicleHandbrake(cache.vehicle, true)
                     end
-                    SetVehicleBrake(playerVehicle, false)
-                    SetVehicleHandbrake(playerVehicle, false)
+                    SetVehicleBrake(cache.vehicle, false)
+                    SetVehicleHandbrake(cache.vehicle, false)
                 end)
             end
             client.currentVehicle = 0

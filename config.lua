@@ -1,8 +1,6 @@
 config = {}
 
-config.language = 'eng' -- name of the language file to use
-
-config.framework = 'qb' -- qb, esx, or none (currently only used for notifications)
+config.language = 'fr' -- name of the language file to use
 
 config.selfDrivingButton = 'U' -- button to toggle on self driving
 
@@ -55,13 +53,3 @@ config.allowedVehicles = {
     [GetHashKey('imorgon')] = true,
     [GetHashKey('tezeract')] = true
 }
-
-config.showNotification = function(message, messageType)
-    -- add your notification resource function to show messages here
-    -- message args is a string
-    if (config.framework == 'qb') then
-        QBCore.Functions.Notify(message, messageType, 2500)
-    elseif (config.framework == 'esx') then
-        ESX.ShowNotification(message, messageType, 2500)
-    end
-end
