@@ -21,6 +21,6 @@ files {
 client_scripts {
     'lang/*.json',
     'config.lua',
-    'client/functions/cl_fn_main.lua',
+    'client/cl_fn_main.lua',
     'client/cl_main.lua'
 }
