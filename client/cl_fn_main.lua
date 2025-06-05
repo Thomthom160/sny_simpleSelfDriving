@@ -1,8 +1,5 @@
 client = {}
 client.language = {}
-client.isPlayerAlive = false
-client.isInVehicle = false
-client.isEnteringVehicle = false
 client.isDriving = false
 client.currentVehicle = 0
 client.target = nil
@@ -10,14 +7,11 @@ client.drivingStyle = 0
 
 client.functions = {}
 
-client.functions.loadLanguages = function(cb)
+client.functions.loadLanguages = function()
 	local language = LoadResourceFile(GetCurrentResourceName(), '/lang/'..config.language..'.json')
     if language then
         jsonLanguage = json.decode(language)
         client.language = jsonLanguage[1]
-    end
-    if cb then
-        cb(true)
     end
 end
 
@@ -40,7 +34,7 @@ client.functions.isDriver = function(playerVehicle)
         client.functions.showNotification('no_driver', 'error')
         return false
     end
-    return true
+    return vehicleDriver == cache.ped
 end
 
 client.functions.playSound = function(soundName)
@@ -59,18 +53,18 @@ client.functions.showNotification = function(message, messageType)
     end
 end
 
-client.functions.startSelfDriving = function(playerPed, playerVehicle, waypointCoords, playSound)
+client.functions.startSelfDriving = function(playerPed, playerVehicle, speed, waypointCoords, playSound)
     if DoesEntityExist(playerPed) and DoesEntityExist(playerVehicle) then
         client.currentVehicle = playerVehicle
         client.target = waypointCoords
         client.isDriving = true
         --local locked = GetVehicleDoorLockStatus(client.currentVehicle)
-        TaskVehicleDriveToCoord(playerPed, client.currentVehicle, client.target.x, client.target.y, client.target.z, config.drivingSpeed, 0, GetEntityModel(client.currentVehicl), client.drivingStyle, config.drivingDistanceStop)
+        TaskVehicleDriveToCoordLongrange(playerPed, client.currentVehicle, client.target.x, client.target.y, client.target.z, speed or 100.0, client.drivingStyle, config.drivingDistanceStop)
         --if locked ~= 2 then
         --    SetVehicleDoorsLocked(client.currentVehicle, 1)
         --end
-        client.functions.showNotification('start_self_driving', 'success')
         if playSound then
+            client.functions.showNotification('start_self_driving', 'success')
             client.functions.playSound('enable')
         end
     end
@@ -103,7 +97,6 @@ client.functions.stopSelfDriving = function(playerPed, brake, playSound)
 end
 
 client.functions.initialize = function()
-    client.functions.loadLanguages(function()
-        client.functions.calculateDrivingStyle()
-    end)
+    client.functions.loadLanguages()
+    client.functions.calculateDrivingStyle()
 end

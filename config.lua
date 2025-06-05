@@ -4,7 +4,7 @@ config.language = 'fr' -- name of the language file to use
 
 config.selfDrivingButton = 'U' -- button to toggle on self driving
 
-config.drivingSpeed = 30.0 -- speed at which the car will travel
+config.drivingSpeed = false -- speed at which the car will travel
 config.drivingDistanceStop = 35.0 -- distance from the target where self dricing will disable
 
 -- Thanks to TomGrobbe for his work on https://vespura.com/fivem/drivingstyle/; I was able to understand the flags
