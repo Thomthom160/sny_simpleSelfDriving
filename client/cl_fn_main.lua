@@ -1,7 +1,6 @@
 client = {}
 client.language = {}
 client.isDriving = false
-client.currentVehicle = 0
 client.target = nil
 client.drivingStyle = 0
 
@@ -20,12 +19,13 @@ client.functions.isVehicleAllowed = function(modelHash)
 end
 
 client.functions.calculateDrivingStyle = function()
-    local binaryValue = ''
-    for i = 31, 1, -1 do
-        local checked = config.drivingStyle[i] and 1 or 0
-        binaryValue = binaryValue..checked
+    local value = 0
+    for k, v in pairs(config.drivingStyleFlags) do
+        if v.enabled then
+            value = value | v.value
+        end
     end
-    client.drivingStyle = tonumber(binaryValue, 2)
+    client.drivingStyle = value
 end
 
 client.functions.isDriver = function(playerVehicle)
@@ -46,23 +46,32 @@ end
 
 client.functions.showNotification = function(message, messageType)
     if client.language[message] then
-        lib.notify(client.language[message], messageType)
+        lib.notify({
+            title = 'Self Drive Menu',
+            description = client.language[message], 
+            type = messageType
+        })
     else
-        lib.notify(("%s : %s\n%s"):format(client.language['missing_translation'], message, messageType), 'error')
+        local msg = ("%s : %s\n%s"):format(client.language['missing_translation'], message, messageType)
+        print(msg)
+        lib.notify({
+            title = 'Self Drive Menu',
+            description = msg, 
+            type = 'error'
+        })
         client.functions.playSound('error')
     end
 end
 
-client.functions.startSelfDriving = function(playerPed, playerVehicle, speed, waypointCoords, playSound)
-    if DoesEntityExist(playerPed) and DoesEntityExist(playerVehicle) then
-        client.currentVehicle = playerVehicle
-        client.target = waypointCoords
-        client.isDriving = true
-        --local locked = GetVehicleDoorLockStatus(client.currentVehicle)
-        TaskVehicleDriveToCoordLongrange(playerPed, client.currentVehicle, client.target.x, client.target.y, client.target.z, speed or 100.0, client.drivingStyle, config.drivingDistanceStop)
-        --if locked ~= 2 then
-        --    SetVehicleDoorsLocked(client.currentVehicle, 1)
-        --end
+client.functions.startSelfDriving = function(speed, waypointCoords, playSound)
+    if DoesEntityExist(cache.ped) and DoesEntityExist(cache.vehicle) then
+        if (not waypointCoords) and client.isDriving then
+            TaskVehicleDriveToCoordLongrange(cache.ped, cache.vehicle, client.target.x, client.target.y, client.target.z, speed or 100.0, client.drivingStyle, config.drivingDistanceStop)
+        else
+            client.target = waypointCoords
+            client.isDriving = true
+            TaskVehicleDriveToCoordLongrange(cache.ped, cache.vehicle, client.target.x, client.target.y, client.target.z, speed or 100.0, client.drivingStyle, config.drivingDistanceStop)
+        end
         if playSound then
             client.functions.showNotification('start_self_driving', 'success')
             client.functions.playSound('enable')
@@ -70,11 +79,15 @@ client.functions.startSelfDriving = function(playerPed, playerVehicle, speed, wa
     end
 end
 
-client.functions.stopSelfDriving = function(playerPed, brake, playSound)
-    if DoesEntityExist(playerPed) then
-        if IsPedInAnyVehicle(playerPed, false) then
+client.functions.stopSelfDriving = function(brake, playSound)
+    if DoesEntityExist(cache.ped) then
+        if IsPedInAnyVehicle(cache.ped, false) then
             ClearVehicleTasks(cache.vehicle)
             if brake then
+                Wait(100)
+                TaskVehiclePark(cache.ped, cache.vehicle, client.target.x, client.target.y, client.target.z, 0, 1, 30, true)
+                ClearVehicleTasks(cache.vehicle)
+                Wait(3000)
                 CreateThread(function()
                     while not IsVehicleStopped(cache.vehicle) do
                         Wait(0)
@@ -85,7 +98,6 @@ client.functions.stopSelfDriving = function(playerPed, brake, playSound)
                     SetVehicleHandbrake(cache.vehicle, false)
                 end)
             end
-            client.currentVehicle = 0
         end
         client.isDriving = false
         client.target = nil

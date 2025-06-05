@@ -1,16 +1,14 @@
 fx_version 'cerulean'
 game 'gta5'
 
-author 'SANDY#6078'
+author 'Thomthom160'
 description 'Standalone simple self driving resource'
-version '1.1.1'
+version '1.2.0'
 lua54 'yes'
 
 ui_page 'client/html/index.html'
 
-shared_scripts { 
-    '@ox_lib/init.lua',
-}
+shared_script '@ox_lib/init.lua'
 
 files {
     'client/html/sounds/*.mp3',
